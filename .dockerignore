@@ -1,0 +1,15 @@
+.git
+.github
+.agents
+.codex
+.env
+.venv
+__pycache__
+.pytest_cache
+data
+*.db
+*.db-shm
+*.db-wal
+tests
+netlify
+netlify.toml

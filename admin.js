@@ -1,93 +1,34 @@
-const DEFAULT_FORM_NAME = "bismillah-interior-contact";
-const CONFIG_KEY = "bismillah-admin-config";
-const SESSION_CONFIG_KEY = "bismillah-admin-session-config";
-const META_KEY = "bismillah-admin-lead-meta";
-
 const statusLabels = {
   new: "Belum dihubungi",
   contacted: "Sudah dihubungi",
-  survey: "Survey",
+  survey: "Survei",
   design: "Desain",
   won: "Deal",
   lost: "Tidak lanjut",
 };
 
-const setupView = document.querySelector("[data-setup-view]");
+const loginView = document.querySelector("[data-login-view]");
 const dashboardView = document.querySelector("[data-dashboard-view]");
-const configForm = document.querySelector("[data-config-form]");
-const inlineConfigForm = document.querySelector("[data-inline-config-form]");
-const configPanel = document.querySelector("[data-config-panel]");
-const openConfigButton = document.querySelector("[data-open-config]");
-const clearConfigButton = document.querySelector("[data-clear-config]");
+const loginForm = document.querySelector("[data-login-form]");
+const loginStatus = document.querySelector("[data-login-status]");
 const refreshButton = document.querySelector("[data-refresh]");
 const exportButton = document.querySelector("[data-export]");
+const logoutButton = document.querySelector("[data-logout]");
 const statusLine = document.querySelector("[data-status-line]");
 const leadList = document.querySelector("[data-lead-list]");
 const leadDetail = document.querySelector("[data-lead-detail]");
 const searchInput = document.querySelector("[data-search]");
-const stateFilter = document.querySelector("[data-state-filter]");
 const statusFilter = document.querySelector("[data-status-filter]");
 
 const appState = {
-  config: null,
-  meta: loadJson(META_KEY, {}),
   submissions: [],
-  forms: [],
+  stats: { total: 0, today: 0, week: 0, new: 0 },
   selectedId: null,
   loading: false,
 };
 
-function loadJson(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function loadConfig() {
-  const sessionValue = sessionStorage.getItem(SESSION_CONFIG_KEY);
-  if (sessionValue) {
-    try {
-      return JSON.parse(sessionValue);
-    } catch {
-      sessionStorage.removeItem(SESSION_CONFIG_KEY);
-    }
-  }
-
-  return loadJson(CONFIG_KEY, null);
-}
-
-function saveConfig(config) {
-  const payload = {
-    siteId: config.siteId.trim(),
-    token: config.token.trim(),
-    formName: (config.formName || DEFAULT_FORM_NAME).trim(),
-    remember: Boolean(config.remember),
-  };
-
-  if (payload.remember) {
-    saveJson(CONFIG_KEY, payload);
-    sessionStorage.removeItem(SESSION_CONFIG_KEY);
-  } else {
-    sessionStorage.setItem(SESSION_CONFIG_KEY, JSON.stringify(payload));
-    localStorage.removeItem(CONFIG_KEY);
-  }
-
-  appState.config = payload;
-}
-
-function clearConfig() {
-  localStorage.removeItem(CONFIG_KEY);
-  sessionStorage.removeItem(SESSION_CONFIG_KEY);
-  appState.config = null;
-  appState.submissions = [];
-  appState.selectedId = null;
+function createIcons() {
+  window.lucide?.createIcons({ attrs: { "stroke-width": 2 } });
 }
 
 function escapeHtml(value) {
@@ -101,7 +42,6 @@ function escapeHtml(value) {
 
 function asText(value) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
-  if (value && typeof value === "object") return JSON.stringify(value);
   return String(value ?? "").trim();
 }
 
@@ -125,46 +65,41 @@ function normalizePhone(phone) {
   return digits;
 }
 
-function getLeadMeta(id) {
-  return appState.meta[id] || { status: "new", note: "" };
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      "X-Requested-With": "BismillahInteriorAdmin",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(result.message || "Permintaan tidak dapat diproses.");
+    error.status = response.status;
+    throw error;
+  }
+
+  return result;
 }
 
-function updateLeadMeta(id, patch) {
-  appState.meta[id] = {
-    ...getLeadMeta(id),
-    ...patch,
-  };
-  saveJson(META_KEY, appState.meta);
-}
-
-function formToConfig(form) {
-  const data = new FormData(form);
-  return {
-    siteId: String(data.get("siteId") || ""),
-    token: String(data.get("token") || ""),
-    formName: String(data.get("formName") || DEFAULT_FORM_NAME),
-    remember: data.get("remember") === "on",
-  };
-}
-
-function fillConfigForm(form) {
-  if (!form || !appState.config) return;
-  form.elements.siteId.value = appState.config.siteId || "";
-  form.elements.token.value = appState.config.token || "";
-  form.elements.formName.value = appState.config.formName || DEFAULT_FORM_NAME;
-  form.elements.remember.checked = appState.config.remember !== false;
-}
-
-function showSetup() {
-  setupView.hidden = false;
+function showLogin(message = "") {
+  loginView.hidden = false;
   dashboardView.hidden = true;
-  fillConfigForm(configForm);
+  loginStatus.textContent = message;
+  loginStatus.classList.toggle("is-error", Boolean(message));
+  loginForm.elements.password.value = "";
+  loginForm.elements.username.focus();
+  createIcons();
 }
 
 function showDashboard() {
-  setupView.hidden = true;
+  loginView.hidden = true;
   dashboardView.hidden = false;
-  fillConfigForm(inlineConfigForm);
+  createIcons();
 }
 
 function setStatus(message, isError = false) {
@@ -172,129 +107,79 @@ function setStatus(message, isError = false) {
   statusLine.classList.toggle("is-error", isError);
 }
 
-async function fetchAdminData() {
-  if (!appState.config?.siteId || !appState.config?.token) {
-    showSetup();
-    return;
+async function checkSession() {
+  try {
+    await api("/api/admin/session");
+    showDashboard();
+    await fetchAdminData();
+  } catch {
+    showLogin();
   }
+}
 
+async function fetchAdminData() {
+  if (appState.loading) return;
   appState.loading = true;
-  setStatus("Mengambil data Netlify Forms...");
+  refreshButton.disabled = true;
+  setStatus("Mengambil data customer dari SQLite...");
 
   const params = new URLSearchParams({
-    state: stateFilter.value,
-    formName: appState.config.formName || DEFAULT_FORM_NAME,
+    status: statusFilter.value,
+    search: searchInput.value.trim(),
   });
 
   try {
-    const response = await fetch(`/api/admin-submissions?${params.toString()}`, {
-      headers: {
-        "x-netlify-site-id": appState.config.siteId,
-        "x-netlify-auth-token": appState.config.token,
-      },
-    });
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(result.message || "Gagal mengambil data Netlify Forms.");
-    }
-
-    appState.forms = result.forms || [];
+    const result = await api(`/api/admin/submissions?${params.toString()}`);
     appState.submissions = result.submissions || [];
+    appState.stats = result.stats || appState.stats;
 
     if (!appState.submissions.some((item) => item.id === appState.selectedId)) {
       appState.selectedId = appState.submissions[0]?.id || null;
     }
 
     render();
-    setStatus(`Terakhir diperbarui ${formatDate(new Date().toISOString())}. Form: ${result.activeForm?.name || appState.config.formName}.`);
+    setStatus(`Data diperbarui ${formatDate(result.generatedAt)}. ${appState.submissions.length} lead ditampilkan.`);
   } catch (error) {
-    render();
+    if (error.status === 401) {
+      showLogin("Sesi admin berakhir. Silakan masuk kembali.");
+      return;
+    }
     setStatus(error.message, true);
   } finally {
     appState.loading = false;
+    refreshButton.disabled = false;
   }
-}
-
-function getLead(item) {
-  return item.lead || {};
-}
-
-function getSearchText(item) {
-  const lead = getLead(item);
-  const raw = item.data || {};
-  return [
-    lead.name,
-    lead.phone,
-    lead.address,
-    lead.spaces,
-    lead.message,
-    raw.otherSpace,
-    raw.selectedSpaces,
-    raw.spaces,
-  ]
-    .map(asText)
-    .join(" ")
-    .toLowerCase();
-}
-
-function getVisibleSubmissions() {
-  const query = searchInput.value.trim().toLowerCase();
-  const selectedStatus = statusFilter.value;
-
-  return appState.submissions.filter((item) => {
-    const meta = getLeadMeta(item.id);
-    const matchesStatus = selectedStatus === "all" || meta.status === selectedStatus;
-    const matchesSearch = !query || getSearchText(item).includes(query);
-    return matchesStatus && matchesSearch;
-  });
 }
 
 function renderStats() {
-  const now = Date.now();
-  const dayStart = new Date();
-  dayStart.setHours(0, 0, 0, 0);
-  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-
-  const today = appState.submissions.filter((item) => new Date(item.createdAt).getTime() >= dayStart.getTime()).length;
-  const week = appState.submissions.filter((item) => new Date(item.createdAt).getTime() >= weekAgo).length;
-  const fresh = appState.submissions.filter((item) => getLeadMeta(item.id).status === "new").length;
-
-  document.querySelector("[data-stat-total]").textContent = appState.submissions.length;
-  document.querySelector("[data-stat-today]").textContent = today;
-  document.querySelector("[data-stat-week]").textContent = week;
-  document.querySelector("[data-stat-new]").textContent = fresh;
+  document.querySelector("[data-stat-total]").textContent = appState.stats.total || 0;
+  document.querySelector("[data-stat-today]").textContent = appState.stats.today || 0;
+  document.querySelector("[data-stat-week]").textContent = appState.stats.week || 0;
+  document.querySelector("[data-stat-new]").textContent = appState.stats.new || 0;
 }
 
 function renderLeadList() {
-  const submissions = getVisibleSubmissions();
-
-  if (!submissions.length) {
-    leadList.innerHTML = `<div class="empty-list">Belum ada data yang cocok dengan filter.</div>`;
+  if (!appState.submissions.length) {
+    leadList.innerHTML = '<div class="empty-list">Belum ada data yang cocok dengan filter.</div>';
     return;
   }
 
-  leadList.innerHTML = submissions
+  leadList.innerHTML = appState.submissions
     .map((item) => {
-      const lead = getLead(item);
-      const meta = getLeadMeta(item.id);
-      const title = lead.name || item.title || "Tanpa nama";
-      const spaces = asText(lead.spaces || "Custom furniture");
-      const phone = lead.phone || "-";
+      const lead = item.lead || {};
       const isActive = item.id === appState.selectedId ? " is-active" : "";
 
       return `
         <button class="lead-row${isActive}" type="button" data-select-lead="${escapeHtml(item.id)}">
           <div class="lead-main">
             <div class="lead-title">
-              <strong>${escapeHtml(title)}</strong>
-              <span class="pill">${escapeHtml(statusLabels[meta.status] || statusLabels.new)}</span>
-              ${item.state === "spam" ? `<span class="pill muted">Spam</span>` : ""}
+              <strong>${escapeHtml(lead.name || "Tanpa nama")}</strong>
+              <span class="pill">${escapeHtml(statusLabels[item.status] || statusLabels.new)}</span>
             </div>
-            <p>${escapeHtml(spaces)}</p>
+            <p>${escapeHtml(asText(lead.spaces) || "Furnitur custom")}</p>
             <div class="lead-meta">
-              <span>${escapeHtml(phone)}</span>
-              <span>${escapeHtml(lead.address || "Alamat belum diisi")}</span>
+              <span>${escapeHtml(lead.phone || "-")}</span>
+              <span>${escapeHtml(lead.address || "Kota belum diisi")}</span>
             </div>
           </div>
           <time class="lead-date">${escapeHtml(formatDate(item.createdAt))}</time>
@@ -307,17 +192,11 @@ function renderLeadList() {
 function renderLeadDetail() {
   const item = appState.submissions.find((submission) => submission.id === appState.selectedId);
   if (!item) {
-    leadDetail.innerHTML = `
-      <div class="empty-detail">
-        <p>Pilih salah satu lead untuk melihat detail.</p>
-      </div>
-    `;
+    leadDetail.innerHTML = '<div class="empty-detail"><p>Pilih salah satu lead untuk melihat detail.</p></div>';
     return;
   }
 
-  const lead = getLead(item);
-  const meta = getLeadMeta(item.id);
-  const rawData = item.data || {};
+  const lead = item.lead || {};
   const phone = normalizePhone(lead.phone);
   const whatsappMessage = [
     `Halo ${lead.name || "Bapak/Ibu"}, kami dari Bismillah Interior.`,
@@ -326,68 +205,60 @@ function renderLeadDetail() {
   ].join("\n");
   const whatsappUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}` : "#";
 
-  const fieldRows = Object.entries(rawData)
-    .filter(([key]) => !["form-name", "bot-field"].includes(key))
-    .map(
-      ([key, value]) => `
-        <div>
-          <span>${escapeHtml(key)}</span>
-          <strong>${escapeHtml(asText(value) || "-")}</strong>
-        </div>
-      `,
-    )
-    .join("");
-
   leadDetail.innerHTML = `
     <div class="detail-head">
       <div>
-        <h2>${escapeHtml(lead.name || item.title || "Tanpa nama")}</h2>
+        <h2>${escapeHtml(lead.name || "Tanpa nama")}</h2>
         <p>${escapeHtml(formatDate(item.createdAt))}</p>
       </div>
-      <span class="pill">${escapeHtml(statusLabels[meta.status] || statusLabels.new)}</span>
+      <span class="pill">${escapeHtml(statusLabels[item.status] || statusLabels.new)}</span>
     </div>
 
     <div class="detail-actions">
-      <a class="primary-action" href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-      <button class="ghost-action" type="button" data-copy-lead="${escapeHtml(item.id)}">Salin Detail</button>
+      <a class="primary-action" href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer">
+        <i data-lucide="message-circle"></i><span>WhatsApp</span>
+      </a>
+      <button class="ghost-action" type="button" data-copy-lead="${escapeHtml(item.id)}">
+        <i data-lucide="copy"></i><span>Salin Detail</span>
+      </button>
     </div>
 
     <div class="detail-block">
-      <h3>Status</h3>
+      <h3>Follow-up</h3>
       <label>
-        Tahap follow-up
-        <select data-status-input="${escapeHtml(item.id)}">
+        Tahap customer
+        <select data-status-input>
           ${Object.entries(statusLabels)
-            .map(([value, label]) => `<option value="${value}"${meta.status === value ? " selected" : ""}>${label}</option>`)
+            .map(([value, label]) => `<option value="${value}"${item.status === value ? " selected" : ""}>${label}</option>`)
             .join("")}
         </select>
       </label>
     </div>
 
     <div class="detail-block">
-      <h3>Catatan</h3>
-      <textarea data-note-input="${escapeHtml(item.id)}" placeholder="Catatan follow-up, ukuran, budget, jadwal survey...">${escapeHtml(meta.note || "")}</textarea>
+      <h3>Catatan Admin</h3>
+      <textarea data-note-input placeholder="Catatan kebutuhan, ukuran, anggaran, atau jadwal survei...">${escapeHtml(item.note || "")}</textarea>
+      <button class="primary-action detail-save" type="button" data-save-lead="${escapeHtml(item.id)}">
+        <i data-lucide="save"></i><span>Simpan Follow-up</span>
+      </button>
     </div>
 
     <div class="detail-block">
-      <h3>Kebutuhan</h3>
-      <p>${escapeHtml(lead.message || "-")}</p>
+      <h3>Kebutuhan Customer</h3>
+      <p>${escapeHtml(lead.message || "Belum ada catatan tambahan.")}</p>
     </div>
 
     <div class="detail-block">
       <h3>Data Customer</h3>
       <div class="field-grid">
         <div><span>WhatsApp</span><strong>${escapeHtml(lead.phone || "-")}</strong></div>
-        <div><span>Alamat</span><strong>${escapeHtml(lead.address || "-")}</strong></div>
+        <div><span>Kota / Kecamatan</span><strong>${escapeHtml(lead.address || "-")}</strong></div>
         <div><span>Produk</span><strong>${escapeHtml(asText(lead.spaces) || "-")}</strong></div>
       </div>
     </div>
-
-    <div class="detail-block">
-      <h3>Field Form</h3>
-      <div class="field-grid">${fieldRows || "<p>Tidak ada field tambahan.</p>"}</div>
-    </div>
   `;
+
+  createIcons();
 }
 
 function render() {
@@ -397,129 +268,131 @@ function render() {
 }
 
 function getLeadSummary(item) {
-  const lead = getLead(item);
-  const meta = getLeadMeta(item.id);
-
+  const lead = item.lead || {};
   return [
     `Nama: ${lead.name || "-"}`,
     `WhatsApp: ${lead.phone || "-"}`,
-    `Alamat: ${lead.address || "-"}`,
+    `Kota/Kecamatan: ${lead.address || "-"}`,
     `Produk: ${asText(lead.spaces) || "-"}`,
     `Kebutuhan: ${lead.message || "-"}`,
-    `Status: ${statusLabels[meta.status] || statusLabels.new}`,
-    `Catatan: ${meta.note || "-"}`,
+    `Status: ${statusLabels[item.status] || statusLabels.new}`,
+    `Catatan: ${item.note || "-"}`,
   ].join("\n");
 }
 
-function exportCsv() {
-  const rows = getVisibleSubmissions();
-  const headers = ["tanggal", "nama", "whatsapp", "alamat", "produk", "kebutuhan", "status", "catatan", "state"];
-  const csvRows = rows.map((item) => {
-    const lead = getLead(item);
-    const meta = getLeadMeta(item.id);
-    return [
-      formatDate(item.createdAt),
-      lead.name,
-      lead.phone,
-      lead.address,
-      asText(lead.spaces),
-      lead.message,
-      statusLabels[meta.status] || statusLabels.new,
-      meta.note,
-      item.state,
-    ].map(toCsvCell);
-  });
+async function saveLead(itemId) {
+  const item = appState.submissions.find((submission) => submission.id === itemId);
+  if (!item) return;
 
-  const csv = [headers.map(toCsvCell), ...csvRows].map((row) => row.join(",")).join("\r\n");
-  const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `leads-bismillah-interior-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  const status = leadDetail.querySelector("[data-status-input]").value;
+  const note = leadDetail.querySelector("[data-note-input]").value.trim();
+  const saveButton = leadDetail.querySelector("[data-save-lead]");
+  saveButton.disabled = true;
+
+  try {
+    const result = await api(`/api/admin/submissions/${encodeURIComponent(itemId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, note }),
+    });
+    const index = appState.submissions.findIndex((submission) => submission.id === itemId);
+    const previousStatus = appState.submissions[index].status;
+    appState.submissions[index] = result.submission;
+
+    if (previousStatus === "new" && result.submission.status !== "new") {
+      appState.stats.new = Math.max(0, appState.stats.new - 1);
+    } else if (previousStatus !== "new" && result.submission.status === "new") {
+      appState.stats.new += 1;
+    }
+
+    render();
+    setStatus(`Follow-up ${result.submission.lead.name} berhasil disimpan.`);
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    saveButton.disabled = false;
+  }
 }
 
-function toCsvCell(value) {
-  return `"${String(value ?? "").replaceAll('"', '""')}"`;
-}
-
-configForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  saveConfig(formToConfig(configForm));
-  showDashboard();
-  fetchAdminData();
+  const submitButton = loginForm.querySelector("button[type='submit']");
+  const formData = new FormData(loginForm);
+  submitButton.disabled = true;
+  loginStatus.textContent = "Memeriksa akses...";
+  loginStatus.classList.remove("is-error");
+
+  try {
+    await api("/api/admin/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: String(formData.get("username") || ""),
+        password: String(formData.get("password") || ""),
+      }),
+    });
+    loginForm.reset();
+    showDashboard();
+    await fetchAdminData();
+  } catch (error) {
+    loginStatus.textContent = error.message;
+    loginStatus.classList.add("is-error");
+  } finally {
+    submitButton.disabled = false;
+  }
 });
 
-inlineConfigForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  saveConfig(formToConfig(inlineConfigForm));
-  configPanel.hidden = true;
-  fetchAdminData();
-});
-
-openConfigButton.addEventListener("click", () => {
-  configPanel.hidden = !configPanel.hidden;
-  fillConfigForm(inlineConfigForm);
-});
-
-clearConfigButton.addEventListener("click", () => {
-  clearConfig();
-  showSetup();
-  setStatus("Konfigurasi dihapus.");
+logoutButton.addEventListener("click", async () => {
+  try {
+    await api("/api/admin/logout", { method: "POST" });
+  } finally {
+    appState.submissions = [];
+    appState.selectedId = null;
+    showLogin();
+  }
 });
 
 refreshButton.addEventListener("click", fetchAdminData);
-exportButton.addEventListener("click", exportCsv);
 
-searchInput.addEventListener("input", render);
-statusFilter.addEventListener("change", render);
-stateFilter.addEventListener("change", fetchAdminData);
+exportButton.addEventListener("click", () => {
+  const params = new URLSearchParams({
+    status: statusFilter.value,
+    search: searchInput.value.trim(),
+  });
+  window.location.assign(`/api/admin/export.csv?${params.toString()}`);
+});
+
+let searchTimer = null;
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(fetchAdminData, 350);
+});
+
+statusFilter.addEventListener("change", fetchAdminData);
 
 leadList.addEventListener("click", (event) => {
   const button = event.target.closest("[data-select-lead]");
   if (!button) return;
-
   appState.selectedId = button.dataset.selectLead;
   render();
 });
 
-leadDetail.addEventListener("change", (event) => {
-  const statusInput = event.target.closest("[data-status-input]");
-  if (!statusInput) return;
-
-  updateLeadMeta(statusInput.dataset.statusInput, { status: statusInput.value });
-  render();
-});
-
-leadDetail.addEventListener("input", (event) => {
-  const noteInput = event.target.closest("[data-note-input]");
-  if (!noteInput) return;
-
-  updateLeadMeta(noteInput.dataset.noteInput, { note: noteInput.value });
-});
-
 leadDetail.addEventListener("click", async (event) => {
+  const saveButton = event.target.closest("[data-save-lead]");
+  if (saveButton) {
+    await saveLead(saveButton.dataset.saveLead);
+    return;
+  }
+
   const copyButton = event.target.closest("[data-copy-lead]");
   if (!copyButton) return;
-
   const item = appState.submissions.find((submission) => submission.id === copyButton.dataset.copyLead);
   if (!item) return;
 
   await navigator.clipboard.writeText(getLeadSummary(item));
-  copyButton.textContent = "Tersalin";
+  copyButton.querySelector("span").textContent = "Tersalin";
   setTimeout(() => {
-    copyButton.textContent = "Salin Detail";
+    copyButton.querySelector("span").textContent = "Salin Detail";
   }, 1200);
 });
 
-appState.config = loadConfig();
-
-if (appState.config) {
-  showDashboard();
-  fetchAdminData();
-} else {
-  showSetup();
-}
+createIcons();
+checkSession();

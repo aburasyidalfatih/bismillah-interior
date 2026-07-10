@@ -1,0 +1,7 @@
+{
+  "extends": ["html-validate:recommended"],
+  "rules": {
+    "form-dup-name": "off",
+    "void-style": ["error", { "style": "selfclosing" }]
+  }
+}

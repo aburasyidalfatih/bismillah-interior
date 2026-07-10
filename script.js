@@ -11,15 +11,26 @@ const productImages = document.querySelectorAll(".product-card img");
 const productCards = document.querySelectorAll(".product-card");
 const productFilterButtons = document.querySelectorAll("[data-product-filter]");
 const productCount = document.querySelector("[data-product-count]");
+const spaceToggle = document.querySelector("[data-space-toggle]");
+const spaceToggleLabel = document.querySelector("[data-space-toggle-label]");
+const extendedSpaceOptions = document.querySelector("[data-extended-space-options]");
+const spaceInputs = document.querySelectorAll('input[name="spaces"]');
+const otherSpaceInput = document.querySelector('input[name="otherSpace"]');
+const spaceCount = document.querySelector("[data-space-count]");
+const packageButtons = document.querySelectorAll("[data-package-choice]");
+const messageInput = contactForm?.querySelector('textarea[name="message"]');
 
 const whatsappNumber = "628114517212";
 let lastFocusedElement = null;
 
-const submitToNetlify = (formData) =>
-  fetch("/", {
+const submitLead = (payload) =>
+  fetch("/api/submissions", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(formData).toString(),
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "BismillahInterior",
+    },
+    body: JSON.stringify(payload),
   });
 
 const setHeaderState = () => {
@@ -47,7 +58,7 @@ const updateProductFilter = (filter) => {
   });
 
   if (productCount) {
-    productCount.innerHTML = `<strong>${visibleCount}</strong> pilihan furniture custom`;
+    productCount.innerHTML = `<strong>${visibleCount}</strong> pilihan furnitur custom`;
   }
 };
 
@@ -58,6 +69,49 @@ productFilterButtons.forEach((button) => {
 });
 
 updateProductFilter("all");
+
+const updateSpaceCount = () => {
+  if (!spaceCount) return;
+
+  const checkedCount = Array.from(spaceInputs).filter((input) => input.checked).length;
+  const hasOther = Boolean(otherSpaceInput?.value.trim());
+  const total = checkedCount + (hasOther ? 1 : 0);
+
+  spaceCount.textContent = total ? `${total} pilihan` : "Belum ada pilihan";
+};
+
+const collapseExtendedSpaces = () => {
+  if (!spaceToggle || !spaceToggleLabel || !extendedSpaceOptions) return;
+
+  extendedSpaceOptions.hidden = true;
+  spaceToggle.setAttribute("aria-expanded", "false");
+  spaceToggleLabel.textContent = "Lihat 13 pilihan lainnya";
+};
+
+spaceToggle?.addEventListener("click", () => {
+  if (!spaceToggleLabel || !extendedSpaceOptions) return;
+
+  const willOpen = extendedSpaceOptions.hidden;
+  extendedSpaceOptions.hidden = !willOpen;
+  spaceToggle.setAttribute("aria-expanded", String(willOpen));
+  spaceToggleLabel.textContent = willOpen ? "Sembunyikan pilihan tambahan" : "Lihat 13 pilihan lainnya";
+});
+
+spaceInputs.forEach((input) => input.addEventListener("change", updateSpaceCount));
+otherSpaceInput?.addEventListener("input", updateSpaceCount);
+updateSpaceCount();
+
+packageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const packageChoice = button.dataset.packageChoice;
+    if (!packageChoice || !messageInput) return;
+
+    const packageMessage = `Saya tertarik dengan ${packageChoice}.`;
+    if (!messageInput.value.trim()) {
+      messageInput.value = packageMessage;
+    }
+  });
+});
 
 navToggle.addEventListener("click", () => {
   const isOpen = nav.classList.toggle("is-open");
@@ -151,34 +205,52 @@ contactForm.addEventListener("submit", (event) => {
 
   formData.set("selectedSpaces", spaces.join(", "));
 
-  const text = [
+  const leadPayload = {
+    name,
+    phone,
+    address,
+    spaces,
+    otherSpace,
+    message,
+    "bot-field": String(formData.get("bot-field") || ""),
+  };
+
+  const textLines = [
     "Halo Bismillah Interior, saya ingin konsultasi desain interior.",
     "",
     `Nama: ${name}`,
     `WhatsApp: ${phone}`,
-    `Alamat: ${address}`,
+    `Kota/Kecamatan: ${address}`,
     `Jenis ruang: ${spaces.join(", ")}`,
-    `Kebutuhan: ${message}`,
-  ].join("\n");
+  ];
+
+  if (message) {
+    textLines.push(`Catatan kebutuhan: ${message}`);
+  }
+
+  const text = textLines.join("\n");
 
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
 
-  formNote.textContent = "Menyimpan data di Netlify Forms dan membuka WhatsApp...";
+  formNote.textContent = "Menyimpan data konsultasi dan membuka WhatsApp...";
   submitButton.disabled = true;
   submitButton.setAttribute("aria-busy", "true");
   window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
-  submitToNetlify(formData)
-    .then((response) => {
+  submitLead(leadPayload)
+    .then(async (response) => {
       if (!response.ok) {
-        throw new Error("Netlify form submit failed");
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.message || "Data konsultasi belum dapat disimpan.");
       }
 
-      formNote.textContent = "Data tersimpan. WhatsApp sudah dibuka untuk mengirim pesan konsultasi.";
+      formNote.textContent = "Data konsultasi tersimpan. WhatsApp sudah dibuka untuk mengirim pesan.";
       contactForm.reset();
+      updateSpaceCount();
+      collapseExtendedSpaces();
     })
-    .catch(() => {
-      formNote.textContent = "WhatsApp sudah dibuka. Data akan tersimpan saat dikirim dari domain Netlify dan Form detection aktif.";
+    .catch((error) => {
+      formNote.textContent = `WhatsApp sudah dibuka, tetapi data belum tersimpan. ${error.message}`;
     })
     .finally(() => {
       submitButton.disabled = false;

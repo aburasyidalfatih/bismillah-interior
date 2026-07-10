@@ -24,10 +24,13 @@
 
 body {
   margin: 0;
-  min-width: 320px;
-  background:
-    radial-gradient(circle at top left, rgba(18, 110, 117, 0.32), transparent 34rem),
-    #0d151c;
+  min-width: 0;
+  overflow-x: clip;
+  background: #0d151c;
+}
+
+a {
+  color: inherit;
 }
 
 button,
@@ -61,6 +64,26 @@ button {
   background: rgba(23, 33, 42, 0.88);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(18px);
+}
+
+.setup-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 34px;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.setup-brand > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  font-size: 0.76rem;
+  font-weight: 900;
 }
 
 .eyebrow {
@@ -163,6 +186,20 @@ textarea:focus {
   font-weight: 900;
 }
 
+.primary-action svg,
+.ghost-action svg,
+.danger-action svg {
+  width: 17px;
+  height: 17px;
+}
+
+.primary-action:disabled,
+.ghost-action:disabled,
+.danger-action:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
 .primary-action {
   color: var(--white);
   background: var(--teal);
@@ -188,6 +225,22 @@ textarea:focus {
   width: min(1440px, 100%);
   margin: 0 auto;
   padding: clamp(18px, 4vw, 34px);
+}
+
+.admin-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin-back-link svg {
+  width: 16px;
+  height: 16px;
 }
 
 .admin-header {
@@ -272,10 +325,22 @@ textarea:focus {
 
 .toolbar {
   display: grid;
-  grid-template-columns: 1fr 180px 210px;
+  grid-template-columns: minmax(220px, 1fr) 230px;
   gap: 14px;
   margin-top: 18px;
   padding: 16px;
+}
+
+.login-status {
+  min-height: 22px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.login-status.is-error {
+  color: #ffd4d0;
 }
 
 .admin-layout {
@@ -426,6 +491,11 @@ textarea:focus {
   line-height: 1.65;
 }
 
+.detail-save {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .field-grid {
   display: grid;
   gap: 10px;
@@ -494,10 +564,13 @@ textarea:focus {
     width: 100%;
   }
 
-  .stat-grid,
   .toolbar,
   .config-grid {
     grid-template-columns: 1fr;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lead-row {

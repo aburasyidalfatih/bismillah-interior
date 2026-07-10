@@ -1,38 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0d151c" />
     <title>Admin Leads | Bismillah Interior</title>
-    <link rel="stylesheet" href="admin.css?v=20260710" />
+    <link rel="stylesheet" href="admin.css?v=20260710-sqlite" />
   </head>
   <body>
     <main class="admin-shell">
-      <section class="setup-view" data-setup-view>
+      <section class="setup-view" data-login-view>
         <div class="setup-card">
-          <p class="eyebrow">Bismillah Interior</p>
+          <a class="setup-brand" href="/" aria-label="Kembali ke Bismillah Interior">
+            <span>BI</span>
+            <strong>Bismillah Interior</strong>
+          </a>
+          <p class="eyebrow">Area terbatas</p>
           <h1>Dashboard Admin</h1>
-          <p class="setup-copy">Hubungkan dashboard ke Netlify Forms untuk melihat data calon customer.</p>
+          <p class="setup-copy">Masuk untuk melihat dan menindaklanjuti data konsultasi pelanggan.</p>
 
-          <form class="setup-form" data-config-form>
+          <form class="setup-form" data-login-form>
             <label>
-              Netlify Site ID
-              <input type="text" name="siteId" placeholder="Contoh: 0d3a9d2f-ef94-4380-93df-27ee400e2048" required />
-            </label>
-            <label>
-              Personal Access Token
-              <input type="password" name="token" placeholder="Token Netlify" required />
+              Username
+              <input type="text" name="username" autocomplete="username" placeholder="Username admin" required />
             </label>
             <label>
-              Nama Form
-              <input type="text" name="formName" value="bismillah-interior-contact" required />
+              Password
+              <input type="password" name="password" autocomplete="current-password" placeholder="Password admin" required />
             </label>
-            <label class="check-row">
-              <input type="checkbox" name="remember" checked />
-              Simpan konfigurasi di browser ini
-            </label>
-            <button class="primary-action" type="submit">Masuk Dashboard</button>
+            <button class="primary-action" type="submit">
+              <i data-lucide="log-in"></i>
+              <span>Masuk Dashboard</span>
+            </button>
+            <p class="login-status" data-login-status role="status"></p>
           </form>
         </div>
       </section>
@@ -40,40 +41,22 @@
       <section class="dashboard-view" data-dashboard-view hidden>
         <header class="admin-header">
           <div>
+            <a class="admin-back-link" href="/"><i data-lucide="arrow-left"></i> Website</a>
             <p class="eyebrow">Admin</p>
             <h1>Leads Bismillah Interior</h1>
           </div>
           <div class="header-actions">
-            <button type="button" class="ghost-action" data-refresh>Refresh</button>
-            <button type="button" class="ghost-action" data-export>Export CSV</button>
-            <button type="button" class="ghost-action" data-open-config>Konfigurasi</button>
+            <button type="button" class="ghost-action" data-refresh title="Muat ulang data">
+              <i data-lucide="refresh-cw"></i><span>Refresh</span>
+            </button>
+            <button type="button" class="ghost-action" data-export title="Unduh data CSV">
+              <i data-lucide="download"></i><span>Export CSV</span>
+            </button>
+            <button type="button" class="danger-action" data-logout title="Keluar dashboard">
+              <i data-lucide="log-out"></i><span>Keluar</span>
+            </button>
           </div>
         </header>
-
-        <section class="config-panel" data-config-panel hidden>
-          <form class="config-grid" data-inline-config-form>
-            <label>
-              Netlify Site ID
-              <input type="text" name="siteId" required />
-            </label>
-            <label>
-              Personal Access Token
-              <input type="password" name="token" required />
-            </label>
-            <label>
-              Nama Form
-              <input type="text" name="formName" required />
-            </label>
-            <label class="check-row compact">
-              <input type="checkbox" name="remember" checked />
-              Simpan di browser ini
-            </label>
-            <div class="config-actions">
-              <button class="primary-action" type="submit">Simpan</button>
-              <button class="danger-action" type="button" data-clear-config>Reset</button>
-            </div>
-          </form>
-        </section>
 
         <section class="status-line" data-status-line role="status">Memuat dashboard...</section>
 
@@ -98,24 +81,16 @@
 
         <section class="toolbar" aria-label="Filter leads">
           <label>
-            Cari
-            <input type="search" data-search placeholder="Nama, nomor, alamat, produk..." />
+            Cari customer
+            <input type="search" data-search placeholder="Nama, nomor, kota, atau produk..." />
           </label>
           <label>
-            Data
-            <select data-state-filter>
-              <option value="verified">Verified</option>
-              <option value="spam">Spam</option>
-              <option value="all">Semua</option>
-            </select>
-          </label>
-          <label>
-            Status
+            Status follow-up
             <select data-status-filter>
               <option value="all">Semua status</option>
               <option value="new">Belum dihubungi</option>
               <option value="contacted">Sudah dihubungi</option>
-              <option value="survey">Survey</option>
+              <option value="survey">Survei</option>
               <option value="design">Desain</option>
               <option value="won">Deal</option>
               <option value="lost">Tidak lanjut</option>
@@ -135,6 +110,7 @@
       </section>
     </main>
 
-    <script src="admin.js?v=20260710"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="admin.js?v=20260710-sqlite"></script>
   </body>
 </html>
