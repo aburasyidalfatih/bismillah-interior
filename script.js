@@ -96,6 +96,7 @@ contactForm.addEventListener("submit", (event) => {
   const formData = new FormData(contactForm);
   const name = String(formData.get("name") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
+  const address = String(formData.get("address") || "").trim();
   const selectedSpaces = formData.getAll("spaces").map((space) => String(space).trim()).filter(Boolean);
   const otherSpace = String(formData.get("otherSpace") || "").trim();
   const message = String(formData.get("message") || "").trim();
@@ -112,6 +113,7 @@ contactForm.addEventListener("submit", (event) => {
     "",
     `Nama: ${name}`,
     `WhatsApp: ${phone}`,
+    `Alamat: ${address}`,
     `Jenis ruang: ${spaces.join(", ")}`,
     `Kebutuhan: ${message}`,
   ].join("\n");
