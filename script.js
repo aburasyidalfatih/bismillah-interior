@@ -8,6 +8,9 @@ const lightboxImage = document.querySelector("[data-lightbox-image]");
 const lightboxCaption = document.querySelector("[data-lightbox-caption]");
 const lightboxCloseButtons = document.querySelectorAll("[data-lightbox-close]");
 const productImages = document.querySelectorAll(".product-card img");
+const productCards = document.querySelectorAll(".product-card");
+const productFilterButtons = document.querySelectorAll("[data-product-filter]");
+const productCount = document.querySelector("[data-product-count]");
 
 const whatsappNumber = "628114517212";
 let lastFocusedElement = null;
@@ -25,6 +28,36 @@ const setHeaderState = () => {
 
 setHeaderState();
 window.addEventListener("scroll", setHeaderState, { passive: true });
+
+const updateProductFilter = (filter) => {
+  let visibleCount = 0;
+
+  productCards.forEach((card) => {
+    const categories = (card.dataset.category || "").split(" ").filter(Boolean);
+    const isVisible = filter === "all" || categories.includes(filter);
+
+    card.hidden = !isVisible;
+    if (isVisible) visibleCount += 1;
+  });
+
+  productFilterButtons.forEach((button) => {
+    const isActive = button.dataset.productFilter === filter;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  if (productCount) {
+    productCount.innerHTML = `<strong>${visibleCount}</strong> pilihan furniture custom`;
+  }
+};
+
+productFilterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    updateProductFilter(button.dataset.productFilter || "all");
+  });
+});
+
+updateProductFilter("all");
 
 navToggle.addEventListener("click", () => {
   const isOpen = nav.classList.toggle("is-open");
