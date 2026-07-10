@@ -477,7 +477,22 @@
           </div>
         </div>
 
-        <form class="contact-form" data-contact-form>
+        <form
+          class="contact-form"
+          name="bismillah-interior-contact"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          data-contact-form
+        >
+          <input type="hidden" name="form-name" value="bismillah-interior-contact" />
+          <p class="form-honeypot" aria-hidden="true">
+            <label>
+              Jangan isi kolom ini
+              <input name="bot-field" tabindex="-1" autocomplete="off" />
+            </label>
+          </p>
+          <input type="hidden" name="selectedSpaces" data-selected-spaces />
           <label>
             Nama
             <input type="text" name="name" placeholder="Nama Anda" required />
@@ -527,7 +542,7 @@
             <span>Kirim via WhatsApp</span>
             <i data-lucide="send"></i>
           </button>
-          <p class="form-note" data-form-note>Nomor tujuan bisa diganti di file script.js.</p>
+          <p class="form-note" data-form-note>Data akan tersimpan di Netlify Forms dan pesan konsultasi dibuka via WhatsApp.</p>
         </form>
       </section>
 

@@ -12,6 +12,13 @@ const productImages = document.querySelectorAll(".product-card img");
 const whatsappNumber = "628114517212";
 let lastFocusedElement = null;
 
+const submitToNetlify = (formData) =>
+  fetch("/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(formData).toString(),
+  });
+
 const setHeaderState = () => {
   header.classList.toggle("is-scrolled", window.scrollY > 24);
 };
@@ -94,6 +101,7 @@ contactForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const formData = new FormData(contactForm);
+  const submitButton = contactForm.querySelector(".form-submit");
   const name = String(formData.get("name") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const address = String(formData.get("address") || "").trim();
@@ -108,6 +116,8 @@ contactForm.addEventListener("submit", (event) => {
     return;
   }
 
+  formData.set("selectedSpaces", spaces.join(", "));
+
   const text = [
     "Halo Bismillah Interior, saya ingin konsultasi desain interior.",
     "",
@@ -118,8 +128,29 @@ contactForm.addEventListener("submit", (event) => {
     `Kebutuhan: ${message}`,
   ].join("\n");
 
-  formNote.textContent = "Membuka WhatsApp untuk mengirim pesan konsultasi...";
-  window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+
+  formNote.textContent = "Menyimpan data di Netlify Forms dan membuka WhatsApp...";
+  submitButton.disabled = true;
+  submitButton.setAttribute("aria-busy", "true");
+  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+  submitToNetlify(formData)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Netlify form submit failed");
+      }
+
+      formNote.textContent = "Data tersimpan. WhatsApp sudah dibuka untuk mengirim pesan konsultasi.";
+      contactForm.reset();
+    })
+    .catch(() => {
+      formNote.textContent = "WhatsApp sudah dibuka. Data akan tersimpan saat dikirim dari domain Netlify dan Form detection aktif.";
+    })
+    .finally(() => {
+      submitButton.disabled = false;
+      submitButton.removeAttribute("aria-busy");
+    });
 });
 
 if (window.lucide) {
