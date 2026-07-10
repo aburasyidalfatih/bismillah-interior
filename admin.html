@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin Leads | Bismillah Interior</title>
+    <link rel="stylesheet" href="admin.css?v=20260710" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section class="setup-view" data-setup-view>
+        <div class="setup-card">
+          <p class="eyebrow">Bismillah Interior</p>
+          <h1>Dashboard Admin</h1>
+          <p class="setup-copy">Hubungkan dashboard ke Netlify Forms untuk melihat data calon customer.</p>
+
+          <form class="setup-form" data-config-form>
+            <label>
+              Netlify Site ID
+              <input type="text" name="siteId" placeholder="Contoh: 0d3a9d2f-ef94-4380-93df-27ee400e2048" required />
+            </label>
+            <label>
+              Personal Access Token
+              <input type="password" name="token" placeholder="Token Netlify" required />
+            </label>
+            <label>
+              Nama Form
+              <input type="text" name="formName" value="bismillah-interior-contact" required />
+            </label>
+            <label class="check-row">
+              <input type="checkbox" name="remember" checked />
+              Simpan konfigurasi di browser ini
+            </label>
+            <button class="primary-action" type="submit">Masuk Dashboard</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="dashboard-view" data-dashboard-view hidden>
+        <header class="admin-header">
+          <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Leads Bismillah Interior</h1>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="ghost-action" data-refresh>Refresh</button>
+            <button type="button" class="ghost-action" data-export>Export CSV</button>
+            <button type="button" class="ghost-action" data-open-config>Konfigurasi</button>
+          </div>
+        </header>
+
+        <section class="config-panel" data-config-panel hidden>
+          <form class="config-grid" data-inline-config-form>
+            <label>
+              Netlify Site ID
+              <input type="text" name="siteId" required />
+            </label>
+            <label>
+              Personal Access Token
+              <input type="password" name="token" required />
+            </label>
+            <label>
+              Nama Form
+              <input type="text" name="formName" required />
+            </label>
+            <label class="check-row compact">
+              <input type="checkbox" name="remember" checked />
+              Simpan di browser ini
+            </label>
+            <div class="config-actions">
+              <button class="primary-action" type="submit">Simpan</button>
+              <button class="danger-action" type="button" data-clear-config>Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="status-line" data-status-line role="status">Memuat dashboard...</section>
+
+        <section class="stat-grid" aria-label="Ringkasan leads">
+          <article>
+            <span>Total leads</span>
+            <strong data-stat-total>0</strong>
+          </article>
+          <article>
+            <span>Hari ini</span>
+            <strong data-stat-today>0</strong>
+          </article>
+          <article>
+            <span>7 hari</span>
+            <strong data-stat-week>0</strong>
+          </article>
+          <article>
+            <span>Belum dihubungi</span>
+            <strong data-stat-new>0</strong>
+          </article>
+        </section>
+
+        <section class="toolbar" aria-label="Filter leads">
+          <label>
+            Cari
+            <input type="search" data-search placeholder="Nama, nomor, alamat, produk..." />
+          </label>
+          <label>
+            Data
+            <select data-state-filter>
+              <option value="verified">Verified</option>
+              <option value="spam">Spam</option>
+              <option value="all">Semua</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select data-status-filter>
+              <option value="all">Semua status</option>
+              <option value="new">Belum dihubungi</option>
+              <option value="contacted">Sudah dihubungi</option>
+              <option value="survey">Survey</option>
+              <option value="design">Desain</option>
+              <option value="won">Deal</option>
+              <option value="lost">Tidak lanjut</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="admin-layout">
+          <div class="lead-list" data-lead-list aria-live="polite"></div>
+
+          <aside class="lead-detail" data-lead-detail>
+            <div class="empty-detail">
+              <p>Pilih salah satu lead untuk melihat detail.</p>
+            </div>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <script src="admin.js?v=20260710"></script>
+  </body>
+</html>
