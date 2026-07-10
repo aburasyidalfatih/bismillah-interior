@@ -9,7 +9,7 @@ const lightboxCaption = document.querySelector("[data-lightbox-caption]");
 const lightboxCloseButtons = document.querySelectorAll("[data-lightbox-close]");
 const productImages = document.querySelectorAll(".product-card img");
 
-const whatsappNumber = "6281234567890";
+const whatsappNumber = "628114517212";
 let lastFocusedElement = null;
 
 const setHeaderState = () => {
