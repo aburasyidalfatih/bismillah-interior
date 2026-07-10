@@ -52,7 +52,7 @@ TRUSTED_HOSTS=bismillahinterior.web.id
 ```
 
 6. Klik **Deploy**.
-7. Buka tab **Domains**, pilih service `app`, lalu tambahkan:
+7. Buka tab **Domains**, pilih service `bismillah-interior`, lalu tambahkan:
    - Host: `bismillahinterior.web.id`
    - Path: `/`
    - Container Port: `8000`
@@ -72,7 +72,7 @@ Dokploy merekomendasikan konfigurasi domain melalui tab Domains dan akan menamba
 
 SQLite disimpan di named volume `bismillah_data` pada `/app/data`. Volume ini tetap tersedia saat container direstart atau aplikasi diredeploy.
 
-Gunakan menu **Volume Backups** Dokploy untuk backup terjadwal. Pilih service `app` dan volume yang berakhiran `_bismillah_data`. Untuk konsistensi SQLite, aktifkan opsi mematikan container selama proses backup. Dokumentasi: <https://docs.dokploy.com/docs/core/volume-backups>.
+Gunakan menu **Volume Backups** Dokploy untuk backup terjadwal. Pilih service `bismillah-interior` dan volume yang berakhiran `_bismillah_data`. Untuk konsistensi SQLite, aktifkan opsi mematikan container selama proses backup. Dokumentasi: <https://docs.dokploy.com/docs/core/volume-backups>.
 
 ## Health Check
 

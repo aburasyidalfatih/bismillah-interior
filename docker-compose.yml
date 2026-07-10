@@ -1,5 +1,5 @@
 services:
-  app:
+  bismillah-interior:
     build:
       context: .
       dockerfile: Dockerfile

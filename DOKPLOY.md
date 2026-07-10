@@ -225,7 +225,7 @@ Gunakan menu **Volume Backups** pada Dokploy:
 1. Konfigurasikan tujuan backup S3.
 2. Buka service Bismillah Interior.
 3. Pilih **Volume Backups**.
-4. Pilih service `app`.
+4. Pilih service `bismillah-interior`.
 5. Pilih volume yang berakhiran `_bismillah_data`.
 6. Atur jadwal backup harian, misalnya:
 
@@ -269,7 +269,7 @@ https://bismillahinterior.web.id/sitemap.xml
 ### Website menampilkan 502 Bad Gateway
 
 - Pastikan container berjalan.
-- Pastikan domain diarahkan ke service `app`.
+- Pastikan domain diarahkan ke service `bismillah-interior`.
 - Pastikan Container Port bernilai `8000`.
 - Periksa log Gunicorn dan health check.
 
@@ -320,7 +320,7 @@ TRUSTED_HOSTS=bismillahinterior.web.id,www.bismillahinterior.web.id
 - [ ] DNS domain mengarah ke IP server Dokploy.
 - [ ] Environment production sudah lengkap.
 - [ ] Docker Compose berhasil dibangun.
-- [ ] Domain menggunakan service `app` dan port `8000`.
+- [ ] Domain menggunakan service `bismillah-interior` dan port `8000`.
 - [ ] HTTPS aktif.
 - [ ] `/healthz` berstatus `ok`.
 - [ ] Formulir menyimpan data.
