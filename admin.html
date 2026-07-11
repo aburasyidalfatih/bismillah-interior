@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#0d151c" />
-    <title>Admin Leads | Bismillah Interior</title>
-    <link rel="stylesheet" href="admin.css?v=20260710-sqlite" />
+    <title>Manajemen Project | Bismillah Interior</title>
+    <link rel="stylesheet" href="admin.css?v=20260710-projects" />
   </head>
   <body>
     <main class="admin-shell">
@@ -18,7 +18,7 @@
           </a>
           <p class="eyebrow">Area terbatas</p>
           <h1>Dashboard Admin</h1>
-          <p class="setup-copy">Masuk untuk melihat dan menindaklanjuti data konsultasi pelanggan.</p>
+          <p class="setup-copy">Masuk untuk mengelola leads, pembayaran, dan progres project interior.</p>
 
           <form class="setup-form" data-login-form>
             <label>
@@ -43,13 +43,13 @@
           <div>
             <a class="admin-back-link" href="/"><i data-lucide="arrow-left"></i> Website</a>
             <p class="eyebrow">Admin</p>
-            <h1>Leads Bismillah Interior</h1>
+            <h1>Operasional &amp; Project</h1>
           </div>
           <div class="header-actions">
             <button type="button" class="ghost-action" data-refresh title="Muat ulang data">
               <i data-lucide="refresh-cw"></i><span>Refresh</span>
             </button>
-            <button type="button" class="ghost-action" data-export title="Unduh data CSV">
+            <button type="button" class="ghost-action" data-export title="Unduh data tampilan aktif">
               <i data-lucide="download"></i><span>Export CSV</span>
             </button>
             <button type="button" class="danger-action" data-logout title="Keluar dashboard">
@@ -58,59 +58,110 @@
           </div>
         </header>
 
+        <nav class="dashboard-tabs" aria-label="Menu dashboard">
+          <button class="tab-action" type="button" data-view-tab="leads">
+            <i data-lucide="users"></i><span>Leads</span><strong data-tab-lead-count>0</strong>
+          </button>
+          <button class="tab-action is-active" type="button" data-view-tab="projects">
+            <i data-lucide="layout-dashboard"></i><span>Pipeline Project</span><strong data-tab-project-count>0</strong>
+          </button>
+        </nav>
+
         <section class="status-line" data-status-line role="status">Memuat dashboard...</section>
 
-        <section class="stat-grid" aria-label="Ringkasan leads">
+        <section class="stat-grid" aria-label="Ringkasan operasional">
           <article>
-            <span>Total leads</span>
-            <strong data-stat-total>0</strong>
-          </article>
-          <article>
-            <span>Hari ini</span>
-            <strong data-stat-today>0</strong>
-          </article>
-          <article>
-            <span>7 hari</span>
-            <strong data-stat-week>0</strong>
+            <span>Total lead</span>
+            <strong data-stat-leads>0</strong>
           </article>
           <article>
             <span>Belum dihubungi</span>
             <strong data-stat-new>0</strong>
           </article>
+          <article>
+            <span>Project aktif</span>
+            <strong data-stat-active>0</strong>
+          </article>
+          <article>
+            <span>Produksi / pasang</span>
+            <strong data-stat-production>0</strong>
+          </article>
+          <article class="stat-finance">
+            <span>Sisa tagihan</span>
+            <strong data-stat-outstanding>Rp0</strong>
+          </article>
         </section>
 
-        <section class="toolbar" aria-label="Filter leads">
-          <label>
-            Cari customer
-            <input type="search" data-search placeholder="Nama, nomor, kota, atau produk..." />
-          </label>
-          <label>
-            Status follow-up
-            <select data-status-filter>
-              <option value="all">Semua status</option>
-              <option value="new">Belum dihubungi</option>
-              <option value="contacted">Sudah dihubungi</option>
-              <option value="survey">Survei</option>
-              <option value="design">Desain</option>
-              <option value="won">Deal</option>
-              <option value="lost">Tidak lanjut</option>
-            </select>
-          </label>
+        <section data-view-panel="leads" hidden>
+          <section class="toolbar" aria-label="Filter leads">
+            <label>
+              Cari customer
+              <input type="search" data-lead-search placeholder="Nama, nomor, kota, atau produk..." />
+            </label>
+            <label>
+              Status follow-up
+              <select data-lead-status-filter>
+                <option value="all">Semua status</option>
+                <option value="new">Belum dihubungi</option>
+                <option value="contacted">Sudah dihubungi</option>
+                <option value="survey">Survei</option>
+                <option value="design">Desain</option>
+                <option value="won">Deal</option>
+                <option value="lost">Tidak lanjut</option>
+              </select>
+            </label>
+          </section>
+
+          <section class="admin-layout">
+            <div class="lead-list" data-lead-list aria-live="polite"></div>
+            <aside class="lead-detail" data-lead-detail aria-label="Detail lead terpilih">
+              <div class="empty-detail"><p>Pilih salah satu lead untuk melihat detail.</p></div>
+            </aside>
+          </section>
         </section>
 
-        <section class="admin-layout">
-          <div class="lead-list" data-lead-list aria-live="polite"></div>
+        <section data-view-panel="projects">
+          <section class="toolbar project-toolbar" aria-label="Filter project">
+            <label>
+              Cari project
+              <input type="search" data-project-search placeholder="Kode, customer, kota, atau project..." />
+            </label>
+            <label>
+              Tahap project
+              <select data-project-status-filter>
+                <option value="all">Semua tahap</option>
+                <option value="follow_up">Follow-up</option>
+                <option value="consultation">Konsultasi selesai</option>
+                <option value="survey">Survey selesai</option>
+                <option value="design_quote">Penawaran desain</option>
+                <option value="design">Desain berjalan</option>
+                <option value="awaiting_dp">Menunggu DP</option>
+                <option value="dp_received">DP diterima</option>
+                <option value="production">Produksi</option>
+                <option value="installation">Pemasangan</option>
+                <option value="completed">Selesai</option>
+                <option value="on_hold">Ditunda</option>
+                <option value="lost">Tidak jadi</option>
+              </select>
+            </label>
+          </section>
 
-          <aside class="lead-detail" data-lead-detail>
-            <div class="empty-detail">
-              <p>Pilih salah satu lead untuk melihat detail.</p>
+          <section class="project-layout">
+            <div class="kanban-shell">
+              <div class="kanban-board" data-project-board aria-live="polite"></div>
             </div>
-          </aside>
+            <aside class="project-detail" data-project-detail aria-label="Detail project terpilih">
+              <div class="empty-detail">
+                <i data-lucide="folder-kanban"></i>
+                <p>Pilih project untuk melihat jadwal, pembayaran, dan progres pekerjaan.</p>
+              </div>
+            </aside>
+          </section>
         </section>
       </section>
     </main>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="admin.js?v=20260710-sqlite"></script>
+    <script src="admin.js?v=20260710-projects"></script>
   </body>
 </html>

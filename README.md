@@ -80,6 +80,22 @@ Gunakan menu **Volume Backups** Dokploy untuk backup terjadwal. Pilih service `b
 GET /healthz
 ```
 
+## Dashboard Project
+
+Dashboard tersedia di `/admin` dan menggunakan akun dari `ADMIN_USERNAME` serta `ADMIN_PASSWORD`.
+
+Workflow operasional yang tersedia:
+
+- Konversi lead formulir menjadi project tanpa mengetik ulang data customer.
+- Pipeline dari follow-up, konsultasi, survey, desain, DP, produksi, pemasangan, hingga selesai.
+- Pencatatan nilai project, biaya desain, pembayaran, dan sisa tagihan otomatis.
+- Jadwal konsultasi, survey, produksi, pemasangan, serta target penyelesaian.
+- Item furniture per project beserta ukuran, material, harga, dan progres produksi.
+- Timeline perubahan status dan catatan aktivitas.
+- Ekspor leads dan project ke CSV.
+
+Migrasi tabel project berjalan otomatis saat aplikasi dimulai. Data lead lama pada tabel `submissions` tetap dipertahankan.
+
 Respons normal:
 
 ```json

@@ -251,6 +251,10 @@ textarea:focus {
   color: var(--white);
 }
 
+.admin-header h1 {
+  font-size: clamp(1.85rem, 4vw, 3rem);
+}
+
 .header-actions {
   display: flex;
   flex-wrap: wrap;
@@ -263,7 +267,9 @@ textarea:focus {
 .stat-grid article,
 .toolbar,
 .lead-list,
-.lead-detail {
+.lead-detail,
+.project-detail,
+.kanban-shell {
   border: 1px solid var(--line-dark);
   border-radius: 8px;
   background: rgba(23, 33, 42, 0.92);
@@ -299,7 +305,7 @@ textarea:focus {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-top: 18px;
 }
@@ -321,6 +327,58 @@ textarea:focus {
   color: var(--white);
   font-size: clamp(1.55rem, 3vw, 2.3rem);
   line-height: 1;
+}
+
+.stat-grid .stat-finance strong {
+  color: var(--gold);
+  font-size: clamp(1.15rem, 2.4vw, 1.8rem);
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 4px;
+  width: fit-content;
+  border: 1px solid var(--line-dark);
+  border-radius: 8px;
+  background: rgba(23, 33, 42, 0.92);
+}
+
+.tab-action {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.66);
+  background: transparent;
+  font-weight: 900;
+}
+
+.tab-action:hover,
+.tab-action.is-active {
+  color: var(--white);
+  background: var(--teal);
+}
+
+.tab-action svg {
+  width: 17px;
+  height: 17px;
+}
+
+.tab-action strong {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.72rem;
 }
 
 .toolbar {
@@ -437,6 +495,411 @@ textarea:focus {
   color: var(--white);
 }
 
+.project-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(420px, 0.72fr);
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+.kanban-shell {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-color: rgba(240, 189, 100, 0.55) rgba(255, 255, 255, 0.05);
+}
+
+.kanban-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 270px;
+  min-height: 680px;
+  width: max-content;
+}
+
+.kanban-column {
+  min-width: 0;
+  border-right: 1px solid var(--line-dark);
+  background: rgba(9, 16, 22, 0.25);
+}
+
+.kanban-column:last-child {
+  border-right: 0;
+}
+
+.kanban-column > header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  color: var(--white);
+  background: #17212a;
+  border-bottom: 1px solid var(--line-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.kanban-column > header strong {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--gold);
+  font-size: 0.72rem;
+}
+
+.kanban-cards {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 620px;
+  padding: 10px;
+}
+
+.project-card {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.055);
+  text-align: left;
+}
+
+.project-card:hover,
+.project-card.is-active {
+  border-color: rgba(240, 189, 100, 0.72);
+  background: rgba(240, 189, 100, 0.1);
+}
+
+.project-card.is-dragging {
+  opacity: 0.45;
+}
+
+.project-code {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-card > strong {
+  font-size: 0.94rem;
+}
+
+.project-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.project-card-meta {
+  display: grid;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-dark);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+}
+
+.kanban-empty {
+  margin: 14px 4px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.project-detail {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 20px;
+  color: var(--white);
+  scrollbar-color: rgba(240, 189, 100, 0.55) rgba(255, 255, 255, 0.05);
+}
+
+.project-detail-head .project-code {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.project-detail-head h2 {
+  font-size: 1.25rem;
+}
+
+.finance-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 16px 0 4px;
+  overflow: hidden;
+  border: 1px solid var(--line-dark);
+  border-radius: 7px;
+  background: var(--line-dark);
+}
+
+.finance-strip > div {
+  min-width: 0;
+  padding: 12px;
+  background: #121c24;
+}
+
+.finance-strip span,
+.finance-strip strong {
+  display: block;
+}
+
+.finance-strip span {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.finance-strip strong {
+  margin-top: 5px;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.finance-strip .balance strong {
+  color: var(--gold);
+}
+
+.project-form,
+.stack-form {
+  display: grid;
+  gap: 12px;
+}
+
+.project-form h4 {
+  margin: 6px 0 -2px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+}
+
+.compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compact-grid .span-two {
+  grid-column: 1 / -1;
+}
+
+.item-editor {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--line-dark);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.item-editor-head,
+.payment-row,
+.payment-amount,
+.icon-actions,
+.note-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-editor-head > input {
+  min-width: 0;
+  flex: 1;
+  font-weight: 900;
+}
+
+.icon-actions {
+  flex: none;
+}
+
+.icon-action {
+  display: inline-grid;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.icon-action:hover {
+  border-color: var(--gold);
+}
+
+.icon-action.danger {
+  color: #ffd4d0;
+  background: rgba(176, 68, 60, 0.13);
+}
+
+.icon-action svg {
+  width: 17px;
+  height: 17px;
+}
+
+.add-panel {
+  margin-top: 10px;
+  border-top: 1px solid var(--line-dark);
+}
+
+.add-panel summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 0 5px;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 900;
+  list-style: none;
+}
+
+.add-panel summary svg {
+  width: 16px;
+  height: 16px;
+}
+
+.add-panel .stack-form {
+  padding-top: 10px;
+}
+
+.payment-row {
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line-dark);
+}
+
+.payment-row > div:first-child {
+  min-width: 0;
+}
+
+.payment-row strong,
+.payment-row span {
+  display: block;
+}
+
+.payment-row span,
+.payment-row p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.payment-amount {
+  justify-content: flex-end;
+}
+
+.payment-amount > strong {
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.timeline {
+  display: grid;
+}
+
+.timeline-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.timeline-row::before {
+  position: absolute;
+  top: 9px;
+  bottom: -1px;
+  left: 5px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.16);
+  content: "";
+}
+
+.timeline-row > span {
+  position: relative;
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  margin-top: 4px;
+  border: 2px solid #17212a;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.timeline-row strong {
+  font-size: 0.82rem;
+}
+
+.timeline-row p,
+.timeline-row time {
+  display: block;
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.note-form input {
+  min-width: 0;
+  flex: 1;
+}
+
+.empty-inline {
+  margin: 0;
+  padding: 10px 0;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.82rem;
+}
+
+.empty-detail svg {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 8px;
+  color: var(--gold);
+}
+
+.conversion-block strong {
+  color: var(--gold);
+}
+
+.pill.status-completed {
+  color: var(--white);
+  background: var(--green);
+}
+
+.pill.status-lost,
+.pill.status-on_hold {
+  color: var(--white);
+  background: var(--red);
+}
+
+.pill.status-production,
+.pill.status-installation {
+  color: var(--white);
+  background: var(--teal);
+}
+
 .empty-detail {
   display: grid;
   min-height: 420px;
@@ -447,6 +910,7 @@ textarea:focus {
 
 .detail-head {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
@@ -533,8 +997,14 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .lead-detail {
+  .lead-detail,
+  .project-detail {
     position: static;
+    max-height: none;
+  }
+
+  .project-layout {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -573,6 +1043,10 @@ textarea:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .stat-grid .stat-finance {
+    grid-column: 1 / -1;
+  }
+
   .lead-row {
     grid-template-columns: 1fr;
   }
@@ -584,5 +1058,54 @@ textarea:focus {
   .field-grid div {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .dashboard-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .tab-action {
+    min-width: 0;
+    justify-content: center;
+    padding: 0 8px;
+  }
+
+  .project-layout {
+    margin-top: 14px;
+  }
+
+  .kanban-board {
+    grid-auto-columns: minmax(248px, 82vw);
+    min-height: 390px;
+  }
+
+  .kanban-cards {
+    min-height: 330px;
+  }
+
+  .project-detail {
+    padding: 16px;
+  }
+
+  .finance-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-grid .span-two {
+    grid-column: auto;
+  }
+
+  .payment-row {
+    display: grid;
+  }
+
+  .payment-amount {
+    justify-content: space-between;
   }
 }
