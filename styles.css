@@ -96,9 +96,7 @@ textarea {
   width: 150px;
   height: 62px;
   overflow: hidden;
-  border-radius: 6px;
-  background: var(--white);
-  box-shadow: 0 8px 24px rgba(10, 17, 24, 0.16);
+  filter: drop-shadow(0 8px 18px rgba(10, 17, 24, 0.32));
 }
 
 .brand-logo {
@@ -113,6 +111,11 @@ textarea {
   max-width: none;
   height: 150px;
   transform: translateY(-36px);
+  filter:
+    brightness(1.22)
+    contrast(1.08)
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.86))
+    drop-shadow(0 0 9px rgba(255, 255, 255, 0.24));
 }
 
 .site-nav {
@@ -1218,8 +1221,11 @@ details p {
   width: 160px;
   height: 66px;
   overflow: hidden;
-  border-radius: 6px;
-  background: var(--white);
+  filter:
+    brightness(1.2)
+    contrast(1.08)
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.72))
+    drop-shadow(0 8px 18px rgba(0, 0, 0, 0.2));
 }
 
 .footer-logo img {
